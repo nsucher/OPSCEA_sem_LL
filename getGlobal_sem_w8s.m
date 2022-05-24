@@ -1,7 +1,8 @@
-function [new_LL_out,LL_s_out,ytl_LL_out] = getGlobal_new_LL
-global new_LL LL_s ytl_LL
+function [LL_s_out,ytl_LL_out,yt_LL_out,u2_s_out] = getGlobal_sem_w8s
+global LL_s ytl_LL yt_LL u2_s
 
 %     Created by Natalia Sucher May 10 2022
-new_LL_out = new_LL;
 LL_s_out = LL_s;
 ytl_LL_out = ytl_LL;
+yt_LL_out = yt_LL;
+u2_s_out = u2_s;

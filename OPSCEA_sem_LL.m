@@ -53,6 +53,7 @@ disp(['Running ' pt ', seizure ' sz '...']);
   global loaf; 
   global sliceinfo; 
   global I;
+  global L; % for sem_plot, LL_plot, sem_w8s scripts
 
 
 %% Import parameters
@@ -93,6 +94,9 @@ cd
 %% Get time segments within the ICEEG file to use
     VIDstart=prm(:,strcmpi(fields_SZ,'VIDstart')); VIDstop=prm(:,strcmpi(fields_SZ,'VIDstop')); %chunk of data (seconds into ICEEG data file) to use from the whole ICEEG data clip for the video
     S.VIDperiod=[str2double(VIDstart{1}) str2double(VIDstop{1})];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    vid_period = S.VIDperiod; %NS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     BLstart=prm(:,strcmpi(fields_SZ,'BLstart')); BLstop=prm(:,strcmpi(fields_SZ,'BLstop')); %chunk of data (seconds into ICEEG data file) to use for baseline (for z-score step)
     S.BLperiod=[str2double(BLstart{1}) str2double(BLstop{1})];
 
@@ -157,12 +161,29 @@ end
     elseif exist([ptpath 'Imaging/elecs/clinical_elecs_all.mat']) % access variables in old format NS
          load([ptpath 'Imaging/elecs/clinical_elecs_all.mat']); % NS
     end;
-    if ~exist('anatomy','var'); anatomy=cell(size(elecmatrix,1),4); end
-    if size(anatomy,1)>size(elecmatrix,1); anatomy(size(elecmatrix,1)+1:end)=[]; end
-    anat=anatomy; clear anatomy; if size(anat,2)>size(anat,1); anat=anat'; end
-    if size(anat,2)==1; anat(:,2)=anat(:,1); end; 
-    if ~exist('eleclabels','var'); eleclabels=anat(:,1); end
-   em=elecmatrix; clear elecmatrix; emnan=isnan(mean(em,2)); badch(emnan)=1; em(emnan,:)=0; EKGorREF=strcmpi('EKG1',anat(:,1))|strcmpi('EKG2',anat(:,1))|strcmpi('EKG',anat(:,2))|strcmpi('EKGL',anat(:,2))|strcmpi('REF',anat(:,1)); anat(EKGorREF,:)=[]; em(EKGorREF,:)=[]; eleclabels(EKGorREF,:)=[]; 
+    if ~exist('anatomy','var'); 
+        anatomy=cell(size(elecmatrix,1),4); 
+    end
+    if size(anatomy,1)>size(elecmatrix,1); 
+        anatomy(size(elecmatrix,1)+1:end,:)=[]; 
+    end
+    anat=anatomy; 
+    clear anatomy; 
+    if size(anat,2)>size(anat,1); 
+        anat=anat'; 
+    end
+    if size(anat,2)==1; 
+        anat(:,2)=anat(:,1); 
+    end; 
+    if ~exist('eleclabels','var'); 
+        eleclabels=anat(:,1); 
+    end
+   em=elecmatrix; 
+   clear elecmatrix; 
+   emnan=isnan(mean(em,2)); 
+   badch(emnan)=1; 
+   em(emnan,:)=0; 
+   EKGorREF=strcmpi('EKG1',anat(:,1))|strcmpi('EKG2',anat(:,1))|strcmpi('EKG',anat(:,2))|strcmpi('EKGL',anat(:,2))|strcmpi('REF',anat(:,1)); anat(EKGorREF,:)=[]; em(EKGorREF,:)=[]; eleclabels(EKGorREF,:)=[]; 
    d(size(anat,1)+1:end,:)=[];
    [nch,~]=size(d); %%%%%%%% edited JK 5/4
 
@@ -239,9 +260,9 @@ ts=ts(vidperiodidx);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ts_diff = size(orig_ts,2)-size(ts,2); % number of seconds being cut off at end -NS
+%ts_diff = size(orig_ts,2)-size(ts,2); % number of seconds being cut off at end -NS
 
-S.SEMperiod = getGlobalSEMperiod; %retrieve semiology duration
+%L.SEMperiod = getGlobalSEMperiod; %retrieve semiology duration
 % semperiodidx=round(S.SEMperiod(1)*sfx+1):S.SEMperiod(2)*sfx; %convert sem duration to time series of iceeg
 % d_sem = d(:,semperiodidx); ntp=length(semperiodidx);
 % ts_sem = ts(semperiodidx);
@@ -297,21 +318,33 @@ for i=frametimpoints;
               text(i/sfx-.01+S.llw*.36,2,'v'); text(repmat(i/sfx+.01705+S.llw*.4,1,4),2.5:1:5.5,{'|','|','|','|'}) %draws an arrow pointing to the transform window
               ttl1=title('ICEEG'); set(ttl1,'fontsize',10)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%          
-          hold on; 
+          hold on;           
           plot([ts(i) ts(i)],ylim,'r-') % vertical red line that follows time
          % new_ts = orig_ts(1,end) - semplot_ts;
 
-          subplot(2,100,62:100)
-          LL_plot(anat,badch,LL,ts,i)
+
+          subplot(2,100,162:200)    
+          sem_plot('q8_mat.csv','q8_time_mat.csv',ylim,vid_period,ts,i) %insert filename of semiology matrix as first parameter       
+          clear q; %replot red line (delete or clear?)
+          q=plot([ts(i) ts(i)],ylim,'r-'); 
 
          
-          subplot(2,100,162:200)        
-          sem_plot('q8_mat.csv','q8_time_mat.csv',ylim) %insert filename of semiology matrix as first parameter       
-          
 
-          S.ll_w_t = getGlobal_ll_w_t; %3D matrix of first symptoms times in seconds
-          [S.LL,S.LL_s,S.ytl_LL] = getGlobal_sem_w8s;
-          sem_w8s(S.LL,S.LL_s,S.ytl_LL,S.ll_w_t)
+          subplot(2,100,62:100)
+          LL_plot(anat,badch,LL,ts,i)
+          clear h; %replot red line (delete or clear?)
+          h=plot([ts(i) ts(i)],ylim,'r-'); 
+
+          [ll_w_t,ll_w_t_labels] = getGlobal_ll_w_t; %3D matrix of first symptoms times in seconds
+          SEMperiod = getGlobalSEMperiod;
+          [LL_s,ytl_LL,yt_LL,u2_s] = getGlobal_sem_w8s;
+
+         
+      %    figure(2)
+         % figure
+          sem_w8s(1,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx)
+     %     figure(1)
+
           hold on;
           
 
@@ -337,8 +370,12 @@ for i=frametimpoints;
                     case 'ramyg';   srfplot=Ramyg; 
                     case 'lamyg';   srfplot=Lamyg; 
                 end
-              else
-                  disp(['ATTN: Row ' num2str(j) ' defined as surface but does not contain an accepted mesh term']); disp(acceptedterms); error('');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NS needs to debug
+%               else
+%                   disp(['ATTN: Row ' num2str(j) ' defined as surface but does not contain an accepted mesh term']); disp(acceptedterms); error('');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
               end
               % plot the individual heatmapped surface
               if exist('srfplot','var'); hh=ctmr_gauss_plot_edited(srfplot,em(nns,:),w8s(nns),S.cax,0,S.cm,S.gsp); 

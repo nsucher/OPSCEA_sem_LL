@@ -15,10 +15,6 @@ function LL_plot(anat,badch,LL,ts,i)
               noneed(num_rows,5) = contains(lower(anat{num_rows,4}),'vent'); % cell array containing row index of strings with "Unknown" in u1             
             end
             noneed=any(noneed,2);
-            
-%             if islogical(badch) ~= true % for newer formatted badch doubles
-%                 badch=logical(badch) %| all(isnan(LL),2); %update badch here, before final noneed update with badch
-%             end
 
             noneed = noneed | badch; % now is either uncessary (noneed) or bad channels
 
@@ -74,19 +70,11 @@ function LL_plot(anat,badch,LL,ts,i)
     %                case 'Right-Inf-Lat-Vent'; 
     %                case 'Right-Cerebral-White-Matter'; 
     %                case 'ctx...'; 
+                   case {'bankssts'}; abv_u1(k) = {'bsts'};
                end
            end
     
            %Average space between yticks for spacious labels
-%            avg_yt_LL = [];
-%            for i = 1:length(u2_s)
-%                if i < length(u2_s)
-%                 avg_yt_LL(i) = u2_s(i) + (u2_s(i+1) - u2_s(i))/2;
-%                else
-%                 avg_yt_LL(i) = u2_s(i-1) + (u2_s(i) - u2_s(i-1)/2);
-%                end
-%            end
-
            avg_yt_LL = [];
            for i = 2:length(u2_s)
                avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i-1))/2;
@@ -105,15 +93,13 @@ function LL_plot(anat,badch,LL,ts,i)
            yt_LL = avg_yt_LL; %yticks for LL_s plot 
            
            % set new_LL and neuroanatomy labels as global
-           setGlobal_sem_w8s(new_LL,LL_s,ytl_LL)
+           setGlobal_sem_w8s(LL_s,ytl_LL,yt_LL,u2_s)
 
            % display plot with pcolor               
            pcolor(ts,1:size(new_LL,1),LL_s);
            shading flat;
           
-           % modify y axis
-                %In case of y label overlap
-                %set(gca,'yticklabel',[],'ydir','reverse','yaxislocation','right','fontsize',8)
+           % modify axes
            xlabel('Time (seconds)')           
            set(gca,'ytick',yt_LL,'yticklabel',ytl_LL,'ydir','reverse','yaxislocation','right','fontsize',8)
 
@@ -123,8 +109,11 @@ function LL_plot(anat,badch,LL,ts,i)
            hold on; plot(xlim,[u2_s u2_s],'w-')
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        %Time Stamp
     % Time Marking
+            %show vertical white lines to denote when semiology plot beginsand ends
+            SEMperiod = getGlobalSEMperiod;
+            plot([SEMperiod(1) SEMperiod(1)],ylim,'w-');
+            plot([SEMperiod(2) SEMperiod(2)],ylim,'w-');
             %hold on; 
-            clear h; %replot red line (delete or clear?)
-            h=plot([ts(i) ts(i)],ylim,'r-');
+
             
 
