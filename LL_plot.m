@@ -1,5 +1,6 @@
-function LL_plot(anat,badch,LL,ts,i)
-%     Created by Natalia Sucher and Jon Kleen May 10 2022 
+function LL_plot(anat,badch,LL,ts,i,S)
+%     Created by Natalia Sucher and Jon Kleen May 10 2022, Updated May 26
+%     2022 by NS
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        %Electrode Activity
     %Electrode Activity   
             %Clear non-labeled channels beyond size of number of electrode rows
@@ -55,9 +56,9 @@ function LL_plot(anat,badch,LL,ts,i)
                    case {'inferiortemporal'}; abv_u1(k) = {'itg'};
                    case {'parahippocampal'}; abv_u1(k) = {'ph'};                   
                    case {'Right-Hippocampus'}; abv_u1(k) = {'rhp'};
-%                    case {'Left-Hippocampus'}; abv_u1(k) = {'lhp'};
+                   case {'Left-Hippocampus'}; abv_u1(k) = {'lhp'};
                    case {'Right-Amygdala'}; abv_u1(k) = {'ram'};
-%                    case {'Left-Amygdala'}; abv_u1(k) = {'lam'};
+                   case {'Left-Amygdala'}; abv_u1(k) = {'lam'};
                    case {'entorhinal'}; abv_u1(k) = {'ent'};
                    case {'fusiform'}; abv_u1(k) = {'fus'};                       
                    %poles    
@@ -68,7 +69,8 @@ function LL_plot(anat,badch,LL,ts,i)
                    %other                       
                    case {'lingual'}; abv_u1(k) = {'lg'};
     %                case 'Right-Inf-Lat-Vent'; 
-    %                case 'Right-Cerebral-White-Matter'; 
+                   case {'Right-Cerebral-White-Matter'}; abv_u1(k) = {'rcwm'};
+                   case {'Left-Cerebral-White-Matter'}; abv_u1(k) = {'lcwm'};
     %                case 'ctx...'; 
                    case {'bankssts'}; abv_u1(k) = {'bsts'};
                end
@@ -105,7 +107,7 @@ function LL_plot(anat,badch,LL,ts,i)
 
            title('Line Length')
            tx=diff(xlim);
-
+           caxis(S.cax)
            hold on; plot(xlim,[u2_s u2_s],'w-')
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        %Time Stamp
     % Time Marking

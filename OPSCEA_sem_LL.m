@@ -32,7 +32,7 @@ function OPSCEA(pt,sz,showlabels,jumpto)
 %     Accuracy of omni-planar and surface casting of epileptiform activity
 %     for intracranial seizure localization. In press at Epilepsia.”
 
-%     Updated by Natalia Sucher May 10 2022
+%     Updated by Natalia Sucher May 26 2022
 
 if ~exist('showlabels','var')||isempty(showlabels); showlabels=true; end %default displays ICEEG and depth labels
 if ~exist('jumpto','var')||isempty(jumpto); jumpto=0; end 
@@ -323,15 +323,17 @@ for i=frametimpoints;
          % new_ts = orig_ts(1,end) - semplot_ts;
 
 
-          subplot(2,100,162:200)    
-          sem_plot('q8_mat.csv','q8_time_mat.csv',ylim,vid_period,ts,i) %insert filename of semiology matrix as first parameter       
+          perdur=2;
+          figure
+%          subplot(2,100,162:200)    
+          sem_plot('k7_mat.csv','k7_time_mat.csv',ylim,vid_period,ts,i) %insert filename of semiology matrix as first parameter       
           clear q; %replot red line (delete or clear?)
           q=plot([ts(i) ts(i)],ylim,'r-'); 
 
          
 
           subplot(2,100,62:100)
-          LL_plot(anat,badch,LL,ts,i)
+          LL_plot(anat,badch,LL,ts,i,S)
           clear h; %replot red line (delete or clear?)
           h=plot([ts(i) ts(i)],ylim,'r-'); 
 
@@ -341,8 +343,8 @@ for i=frametimpoints;
 
          
       %    figure(2)
-         % figure
-          sem_w8s(1,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx)
+          figure
+          sem_w8s(1,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period)
      %     figure(1)
 
           hold on;

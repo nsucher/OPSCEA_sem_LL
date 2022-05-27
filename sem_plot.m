@@ -4,7 +4,8 @@
 
 function sem_plot(sem_matrix_filename,time_matrix_filename,ylim,vid_period,ts,idx)
 
-%   Created by Natalia Sucher and Jon Kleen May 10 2022
+%   Created by Natalia Sucher and Jon Kleen May 10 2022, Updated by NS May
+%   26 2022
 % note: semiology time series is in sampling frequency of 5 Hz
             %-----------------
             % 1. Load data and find number of columns
@@ -93,63 +94,40 @@ function sem_plot(sem_matrix_filename,time_matrix_filename,ylim,vid_period,ts,id
 %%%%%%%%%%%%%%%%%%%
             % 4. Align time series 
             % exact times to the millisecond of video
+
+            
             time_mat = readtable(time_matrix_filename);
             table2cell(time_mat);
-            vid_start = time_mat{1,1};
-            vid_end = time_mat{1,2};
-            mat_start = time_mat{1,3};
-            mat_end = time_mat{1,4};
 
-            vid_vec = [vid_start vid_end];
-            mat_vec = [mat_start mat_end];
- 
-            [~,~,~,~,mat_s_min,mat_s_sec] = datevec(mat_start);
-            [~,~,~,~,mat_e_min,mat_e_sec] = datevec(mat_end);
-            [~,~,~,~,vid_s_min,vid_s_sec] = datevec(vid_start);
-            [~,~,~,~,vid_e_min,vid_e_sec] = datevec(vid_end); 
+%                    time_vid_start = seconds(time_mat{1,1})
+%                    time_vid_end = seconds(time_mat{1,2})
+%                    time_mat_start = seconds(time_mat{1,3})
+%                    time_mat_end = seconds(time_mat{1,4})
+        
+            dur_vid = seconds(time_mat{1,2}) - seconds(time_mat{1,1}); %vid end - vid start = video duration
+            dur_mat = seconds(time_mat{1,4}) - seconds(time_mat{1,3}); %mat end - mat start = symptom matrix duration
+            mat_start = seconds(time_mat{1,3}) - seconds(time_mat{1,1}); % mat start - vid start = symptom matrix start in entire video
+            mat_end = seconds(time_mat{1,4}) - seconds(time_mat{1,1}); % mat end - vid start = symptom matrix end in entire video
+                        
 
-            %find duration of semiology matrix
-            if mat_s_min > mat_e_min             % Captures minute time differences such as 8:59 to 9:01, ignores hours
-                mat_dur_m = mat_s_min - mat_e_min;
-            else
-                mat_dur_m = mat_e_min - mat_s_min;
-            end
-
-            mat_dur_s = mat_e_sec - mat_s_sec; % can be negative -- make sure!
-
-            
-            %find duration of video 
-            if vid_s_min > vid_e_min             % Captures minute time differences such as 8:59 to 9:01, ignores hours
-                vid_dur_m = vid_s_min - vid_e_min;
-            else
-                vid_dur_m = vid_e_min - vid_s_min;
-            end
-
-            vid_dur_s = vid_e_sec - vid_s_sec; % can be negative -- make sure!
-
-            %convert durations to seconds
-            total_mat_s = mat_dur_m * 60 + mat_dur_s;
-            total_vid_s = vid_dur_m * 60 + vid_dur_s;
-            
-            mat_start_sec = (mat_s_min * 60 + mat_s_sec); 
-            vid_start_sec = (vid_s_min * 60 + vid_s_sec);
-
-            mat_end_sec = (mat_e_min * 60 + mat_e_sec); 
-            vid_end_sec = (vid_e_min * 60 + vid_e_sec);
-
-            SEMfirst = mat_start_sec - vid_start_sec + vid_period(1);
-            SEMlast = SEMfirst + total_mat_s;
+            %EC 133-03 (w3)
+            %ONLY IF END OF SEMIOLOGY MATRIX CORRESPONDS WITH END OF VIDEO
+            vid_start = mat_start + dur_mat - vid_period(2);
+            SEMfirst = mat_start - vid_start;  %symptom start in shortened video
+            SEMlast = SEMfirst + dur_mat; %symptom end in shortened video
             SEMperiod = [SEMfirst SEMlast];
             setGlobalSEMperiod(SEMperiod);
+           
+
 
 %%%%%%%%%%%%%%%%%%%
             % 5. Bin present symptoms (clean mat) and first appearance of
             % symptoms (ll_weight_times)
 
             y_label_names = full_name_vec;
-            clean_mat = [];  %initialize empty matrix to collect cols with 1,2, or 3 present
             [rows,cols] = size(nums_t_mat);
-            
+            clean_mat = [];  %initialize empty matrix to collect cols with 1,2, or 3 present
+                        
             ll_w_t_labels = {}; %initialize labels for ll weight times
             ll_weight_times = []; %initialize empty matrix to store times to analyze weight difference
 
@@ -187,6 +165,7 @@ function sem_plot(sem_matrix_filename,time_matrix_filename,ylim,vid_period,ts,id
 
                     %find times for future ll weight calculation
                     if any(first_auto)
+                        
                         ll_weight_times(1,n,1) =  first_auto / 5  + SEMfirst; % divide by 5 milliseconds and add to sem time start
                         %disp(["auto: ",y_label_names(n), num2str(first_auto) num2str(ll_weight_times(1,n,1))])
                         ll_weight_times(2,n,1) = ll_weight_times(1,n,1) - x; 
@@ -242,4 +221,4 @@ function sem_plot(sem_matrix_filename,time_matrix_filename,ylim,vid_period,ts,id
      
             yline([min(xlim):iter:max(xlim)],'k-',.01)
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        %Time Stamp
-            1
+            %1
