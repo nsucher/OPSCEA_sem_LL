@@ -1,28 +1,12 @@
-function LL_plot(anat,badch,LL,ts,i,S)
+function LL_plot(new_anat,new_LL,ts,i,S)
 %     Created by Natalia Sucher and Jon Kleen May 10 2022, Updated May 26
 %     2022 by NS
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        %Electrode Activity
-    %Electrode Activity   
-            %Clear non-labeled channels beyond size of number of electrode rows
-            %Vectorize unwanted channels 
-            noneed=false(size(anat,1),4);
-            anat_rows = size(anat,1); 
-            badch = badch(1:anat_rows); % cut down badch to eliminate extra bad channels after anatomy rows size
-            for num_rows=1:size(anat,1)
-              noneed(num_rows,1) = contains(lower(anat{num_rows,4}),'ctx'); % cell array containing row index of strings with "ctx" in u1
-              noneed(num_rows,2) = contains(lower(anat{num_rows,4}),'wm'); % cell array containing row index of strings with "wm" in u1
-              noneed(num_rows,3) = contains(lower(anat{num_rows,4}),'white-matter'); % cell array containing row index of strings with "Right-Cerebral-White-Matter" in u1             
-              noneed(num_rows,4) = contains(lower(anat{num_rows,4}),'unknown'); % cell array containing row index of strings with "Unknown" in u1
-              noneed(num_rows,5) = contains(lower(anat{num_rows,4}),'vent'); % cell array containing row index of strings with "Unknown" in u1             
-            end
-            noneed=any(noneed,2);
+   
+%writematrix(LL,'q8_LL.csv') %hardcoding specific file to feed to brain_w8s.m
 
-            noneed = noneed | badch; % now is either uncessary (noneed) or bad channels
-
-            new_LL=LL;
-            new_anat=anat;
-            new_LL(noneed,:)=[];
-            new_anat(noneed,:)=[];
+%Electrode Activity   
+  
 
            %Sort new anatomy
            [u1,~,u3] = unique(new_anat(:,4)); % u1 = new_anat(u2); u2 = index of new_anat; u3 = index of u1
@@ -73,21 +57,55 @@ function LL_plot(anat,badch,LL,ts,i,S)
                    case {'Left-Cerebral-White-Matter'}; abv_u1(k) = {'lcwm'};
     %                case 'ctx...'; 
                    case {'bankssts'}; abv_u1(k) = {'bsts'};
+                   case {'Right-choroid-plexus'}; abv_u1(k) = {'rchp'};
+                   case {'Right-Putamen'}; abv_u1(k) = {'rput'};
+                   case {'Right-VentralDC'}; abv_u1(k) = {'rvdc'};
+                   case {'inferiorparietal'}; abv_u1(k) = {'ipt'};     
+                   case {'superiorparietal'}; abv_u1(k) = {'spt'};                       
+
                end
            end
     
            %Average space between yticks for spacious labels
-           avg_yt_LL = [];
-           for i = 2:length(u2_s)
-               avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i-1))/2;
-           end
+           [LL_s_row,~] = size(LL_s);
+           [label_row,~] = size(u2_s);
+           avg_yt_LL = nan(1,label_row);
 
-           avg_yt_LL = [];
-           for i = 2:length(u2_s)
-                avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i-1))/2;
-           end
+
+
+           for i = 2:length(u2_s) + 1
+               if i < length(u2_s)+1
+                    avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i-1))/2; 
+               elseif i == length(u2_s) + 1 %20
+                   avg_yt_LL(i-1) = u2_s(i-1) + (LL_s_row - u2_s(i-1))/2;
+               end
+%                elseif i == length(u2_s)
+%                   avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i))/2; 
+%                   avg_yt_LL(i) = u2_s(i-1) + (LL_s_row - u2_s(i))/2; 
+%                end
+               % end
+               %avg_yt_LL(length(u2_s)) = u2_s(i); % added to account for last average in for loop             
+           end 
+
+
+
+%            for i = 2:length(u2_s)
+%                i
+%                if i < length(u2_s)
+%                   avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i-1))/2; 
+%                elseif i == length(u2_s)
+%                   avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i))/2; 
+%                   avg_yt_LL(i) = u2_s(i-1) + (LL_s_row - u2_s(i))/2; 
+%                end
+%                % end
+%                %avg_yt_LL(length(u2_s)) = u2_s(i); % added to account for last average in for loop             
+%            end 
+           
+%            avg_yt_LL = [];
+%            for i = 2:length(u2_s)
+%                avg_yt_LL(i-1) = u2_s(i-1) + (u2_s(i) - u2_s(i-1))/2;
+%            end
                                
-           avg_yt_LL(length(u2_s)) = u2_s(i); % added to account for last average in for loop             
 
            
            % variables for y axis 
@@ -95,7 +113,7 @@ function LL_plot(anat,badch,LL,ts,i,S)
            yt_LL = avg_yt_LL; %yticks for LL_s plot 
            
            % set new_LL and neuroanatomy labels as global
-           setGlobal_sem_w8s(LL_s,ytl_LL,yt_LL,u2_s)
+           setGlobal_sem_w8s(LL_s,ytl_LL,yt_LL,u2_s,u3_s)
 
            % display plot with pcolor               
            pcolor(ts,1:size(new_LL,1),LL_s);

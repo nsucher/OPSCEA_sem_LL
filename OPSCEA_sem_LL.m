@@ -185,6 +185,7 @@ end
    em(emnan,:)=0; 
    EKGorREF=strcmpi('EKG1',anat(:,1))|strcmpi('EKG2',anat(:,1))|strcmpi('EKG',anat(:,2))|strcmpi('EKGL',anat(:,2))|strcmpi('REF',anat(:,1)); anat(EKGorREF,:)=[]; em(EKGorREF,:)=[]; eleclabels(EKGorREF,:)=[]; 
    d(size(anat,1)+1:end,:)=[];
+   badch(size(anat,1)+1:end)=[];
    [nch,~]=size(d); %%%%%%%% edited JK 5/4
 
 isR=nansum(em(:,1))>0; isL=isR~=1; %handy binary indicators for laterality
@@ -239,13 +240,6 @@ end
 % make a timtestamp vector
 ts=0:1/sfx:size(d,2)*(1/sfx)-1/sfx;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-orig_ts = ts; % assign ts new name to access when aligning sem_plot and LL_plot -NS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 % Extract the period of data to be used for the video (remove flanking data)
 
@@ -256,17 +250,6 @@ vidperiodidx=round(S.VIDperiod(1)*sfx+1):S.VIDperiod(2)*sfx;
 d=d(:,vidperiodidx); ntp=length(vidperiodidx);
 LL=LL(:,vidperiodidx); 
 ts=ts(vidperiodidx); 
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%ts_diff = size(orig_ts,2)-size(ts,2); % number of seconds being cut off at end -NS
-
-%L.SEMperiod = getGlobalSEMperiod; %retrieve semiology duration
-% semperiodidx=round(S.SEMperiod(1)*sfx+1):S.SEMperiod(2)*sfx; %convert sem duration to time series of iceeg
-% d_sem = d(:,semperiodidx); ntp=length(semperiodidx);
-% ts_sem = ts(semperiodidx);
-% LL_sem=LL(:,semperiodidx); 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -320,33 +303,56 @@ for i=frametimpoints;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%          
           hold on;           
           plot([ts(i) ts(i)],ylim,'r-') % vertical red line that follows time
-         % new_ts = orig_ts(1,end) - semplot_ts;
+
+            %Clear non-labeled channels beyond size of number of electrode rows
+            %Vectorize unwanted channels 
+            noneed=false(size(anat,1),4);
+            anat_rows = size(anat,1); 
+            badch = badch(1:anat_rows); % cut down badch to eliminate extra bad channels after anatomy rows size
+            for num_rows=1:size(anat,1)
+              noneed(num_rows,1) = contains(lower(anat{num_rows,4}),'ctx'); % cell array containing row index of strings with "ctx" in u1
+              noneed(num_rows,2) = contains(lower(anat{num_rows,4}),'wm'); % cell array containing row index of strings with "wm" in u1
+              noneed(num_rows,3) = contains(lower(anat{num_rows,4}),'white-matter'); % cell array containing row index of strings with "Right-Cerebral-White-Matter" in u1             
+              noneed(num_rows,4) = contains(lower(anat{num_rows,4}),'unknown'); % cell array containing row index of strings with "Unknown" in u1
+              noneed(num_rows,5) = contains(lower(anat{num_rows,4}),'vent'); % cell array containing row index of strings with "Unknown" in u1             
+            end
+            noneed=any(noneed,2);
+    
+            noneed = noneed | badch; % now is either uncessary (noneed) or bad channels
+    
+            new_LL=LL;
+            clear LL;
+            new_anat=anat;
+            clear anat; %check to see if used later
+            new_LL(noneed,:)=[];
+            new_anat(noneed,:)=[];
 
 
-          perdur=2;
-          figure
-%          subplot(2,100,162:200)    
-          sem_plot('k7_mat.csv','k7_time_mat.csv',ylim,vid_period,ts,i) %insert filename of semiology matrix as first parameter       
+          perdur=16;
+          %figure
+          subplot(2,100,162:200)    
+          sem_plot('w3_mat.csv','w3_time_mat.csv',ylim,vid_period,ts,i,perdur) %insert filename of semiology matrix as first parameter       
           clear q; %replot red line (delete or clear?)
           q=plot([ts(i) ts(i)],ylim,'r-'); 
 
-         
+        
 
           subplot(2,100,62:100)
-          LL_plot(anat,badch,LL,ts,i,S)
+          LL_plot(new_anat,new_LL,ts,i,S)
           clear h; %replot red line (delete or clear?)
           h=plot([ts(i) ts(i)],ylim,'r-'); 
 
           [ll_w_t,ll_w_t_labels] = getGlobal_ll_w_t; %3D matrix of first symptoms times in seconds
           SEMperiod = getGlobalSEMperiod;
-          [LL_s,ytl_LL,yt_LL,u2_s] = getGlobal_sem_w8s;
+          [LL_s,ytl_LL,yt_LL,u2_s,u3_s] = getGlobal_sem_w8s;
 
          
       %    figure(2)
-          figure
-          sem_w8s(1,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period)
+ %          figure
+          [clean_ll_w_t_l, clean_LL_diff] = sem_w8s(1,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period,S,u3_s);
      %     figure(1)
-
+          figure
+          brain_w8s(pt,sz,clean_ll_w_t_l,clean_LL_diff,new_anat,noneed,em);
           hold on;
           
 

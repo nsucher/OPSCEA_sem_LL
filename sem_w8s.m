@@ -1,4 +1,4 @@
-function sem_w8s(cut_or_not,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period,S,u3_s)
+function [clean_ll_w_t_l, clean_LL_diff] = sem_w8s(cut_or_not,ll_w_t,ll_w_t_labels,SEMperiod,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period,S,u3_s)
 format longG
 
 %Created by NS & Dr. Jon Kleen, Updated 5/26 by NS
@@ -82,7 +82,7 @@ for c = 1:col
 end
 
 %EXPORT CLEAN_LL_DIFF TO BRAIN W8S TO PLOT W8 CHANGE FOR SPECIFIC SYMPTOM
-writematrix(clean_LL_diff,'q8_clean_LL_diff.csv') %need to make specific for file
+%writematrix(clean_LL_diff,'q8_clean_LL_diff.csv') %need to make specific for file
 
  
 %GROUP ELECTRODES BY YTL_LL NEUROANAT LABELS
@@ -151,9 +151,9 @@ end
 
 %change anat_elec 
 
-writecell(anat_elec,'q8_anat_elec.csv'); %divide by c_col for  3D pages, divide the 3D pages by 3 for 4D pages?
-writematrix(anat_w8s,'q8_anat_w8s.csv'); %read in another file separate pages by column every multiple of number of symptoms
-writecell(clean_ll_w_t_l,'q8_clean_ll_w_t_l.csv'); %read in another file separate pages by column every multiple of number of symptoms
+% writecell(anat_elec,'q8_anat_elec.csv'); %divide by c_col for  3D pages, divide the 3D pages by 3 for 4D pages?
+% writematrix(anat_w8s,'q8_anat_w8s.csv'); %read in another file separate pages by column every multiple of number of symptoms
+% writecell(clean_ll_w_t_l,'q8_clean_ll_w_t_l.csv'); %read in another file separate pages by column every multiple of number of symptoms
 
 
 
