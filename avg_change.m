@@ -1,7 +1,15 @@
+% AVG_CHANGE        Plot average change of electrode weights as a heatmap projected onto a 3D reconstructed
+%                   brain x seconds before and after symptom onset
+%                   Display brain weights (brain_w8s) given patient filename (pt) and seizure folder (sz)                   
+
+% Natalia Sucher
+% Dr. Jon Kleen
+% 06/11/2021
+% UCSF Neurology, Epilepsy Department
+% avg_change.m
+
 function avg_change(pt,sz)
 
-%created by Natalia Sucher 06/11/2021
-%plots average weight changes perdur seconds before and after symptom onset
 
 % PSEUDOCODE
 % 1. Set path
@@ -212,7 +220,7 @@ function avg_change(pt,sz)
 
     new_em=em; %do not clear anat, used to construct noneed 
     new_em(noneed,:)=[];
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
 % 3. Get variables from functions
 
 
@@ -234,4 +242,4 @@ function avg_change(pt,sz)
     set(0,'DefaultFigureVisible','on')
     figure
 
-    [symptomm,modee] = brain_w8s(pt,sz,clean_ll_w_t_l,clean_LL_diff,new_em(si,:)); 
+    brain_w8s(pt,sz,clean_ll_w_t_l,clean_LL_diff,new_em(si,:)); 
