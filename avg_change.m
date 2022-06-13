@@ -9,7 +9,7 @@
 % UCSF Neurology, Epilepsy Department
 % avg_change.m
 
-function new_avg_change(pt,sz)
+function avg_change(pt,sz)
 
 
 % PSEUDOCODE
