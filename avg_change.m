@@ -1,6 +1,20 @@
-% AVG_CHANGE        Plot average change of electrode weights as a heatmap projected onto a 3D reconstructed
-%                       brain x seconds before and after symptom onset
-%                       Display brain weights (brain_w8s) given patient filename (pt) and seizure folder (sz)                   
+% AVG_CHANGE            Plot average change of electrode weights as a heatmap projected onto a 3D 
+%                       reconstructed brain x seconds before and after symptom onset                      
+% Input: 
+%       pt: patient filename
+%       sz: seizure folder
+%       fig: display figure (1) or not (0) of brain weights
+%       sx: symptom
+%       mx: mode
+%       perdur: period of duration/number of seconds before and after symptom onset        
+
+% Output: 
+%       anatstructureselec_weights:
+%       EM:
+%       ua: 
+%
+% Example:
+%       avg_change('EC107','01',1,'Head Turn Left',2,10)
 
 % Natalia Sucher
 % Dr. Jon Kleen
@@ -9,7 +23,7 @@
 % UCSF Neurology, Epilepsy Department
 % avg_change.m
 
-function avg_change(pt,sz)
+function [clean_ll_w_t_l,anatstructureselec_weights,EM,ua,pval] = avg_change(pt,sz,fig,sx,mx,perdur)
 
 
 % PSEUDOCODE
@@ -235,8 +249,6 @@ new_anat(noneed,:)=[];
 new_em=em; %do not clear anat, used to construct noneed 
 new_em(noneed,:)=[];
 
-perdur=10;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -260,12 +272,12 @@ mat_time_name = [study '_time_mat.csv']; %string for study_time_mat.csv
 
 % 5. Plot average changes 
 
+% [symptomm,modee] = brain_w8s(pt,sz,clean_ll_w_t_l,clean_LL_diff,new_em(si,:)); 
 
-set(0,'DefaultFigureVisible','on')
+if fig 
 
 figure('color','w','position',[440,348,836,449]); subplot(1,3,1:2)
 
-[symptomm,modee] = brain_w8s(pt,sz,clean_ll_w_t_l,clean_LL_diff,new_em(si,:)); 
 lightsout; if isR; litebrain('r',1); else; litebrain('l',1); end
     hold on; for i=1:size(new_em,1); plot3(new_em(i,1),new_em(i,2),new_em(i,3),'k.','markersize',15); end
 cmocean('balance')
@@ -274,25 +286,42 @@ colorbar('Ticks',caxis,'fontsize',18,'Position',[.65,.2,.012,.6])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 
 % 6. Graph distribution
+if fig
 
 subplot(1,4,4); hold on;
+end
 
 %                   symptomm=19; %make this automatically indexed later
 %                   modee=2; 
 
-[ua,ub,uc]=unique(new_anat(si,4));
+
+[ua,~,~]=unique(new_anat(si,4));
 pval=nan(length(ua),1);
 anatstructureselec_weights={};
-for u=1:length(ua) %this is all using SORTED orders so be cautious!
-  anatstructureindex=strcmpi(new_anat(si,4),ua(u));
-  anatstructureselec_weights{u,1}=clean_LL_diff(anatstructureindex,symptomm,modee);
-  [~,pval(u)]=ttest(anatstructureselec_weights{u,1});
-  if pval(u)<.05; mrkr='r*'; else; mrkr='ko'; end
-  plot(anatstructureselec_weights{u,1},u*ones(length(anatstructureselec_weights{u,1}),1),mrkr)
-end
-xlim([max(abs(xlim))*[-1 1]]); yline(0,'k-'); for u=1:length(ua); xline(u,'G:',.25); end
-set(gca,'ytick',1:length(ua),'YTickLabel',ua,'fontsize',18)
+sx_i = strcmpi(clean_ll_w_t_l,sx);
+chosen_sx = find(sx_i==1);
+if sum(sx_i) > 0 
 
-    
+    for u=1:length(ua) %this is all using SORTED orders so be cautious!
+      anatstructureindex=strcmpi(new_anat(si,4),ua(u));
+      anatstructureselec_weights{u,1}=clean_LL_diff(anatstructureindex,chosen_sx,mx);
+      EM{u} = new_em(anatstructureindex,:);
+      [~,pval(u)]=ttest(anatstructureselec_weights{u,1});
+      if fig
+          if pval(u)<.05; mrkr='r*'; else; mrkr='ko'; end
+          plot(anatstructureselec_weights{u,1},u*ones(length(anatstructureselec_weights{u,1}),1),mrkr)
+      end
+    end
+    if fig
+        xlim([max(abs(xlim))*[-1 1]]); yline(0,'k-'); for u=1:length(ua); xline(u,'G:',.25); end
+        set(gca,'ytick',1:length(ua),'YTickLabel',ua,'fontsize',18)
+    end
+else
+    anatstructureselec_weights = [];
+    EM = [];
+    ua = [];
+    pval = [];
+end
