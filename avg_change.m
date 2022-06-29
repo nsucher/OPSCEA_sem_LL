@@ -260,11 +260,11 @@ set(0,'DefaultFigureVisible','off')
 mat_name = [study '_mat.csv'];   %string for study_mat.csv
 mat_time_name = [study '_time_mat.csv']; %string for study_time_mat.csv
 
-[SEMperiod,ll_w_t,ll_w_t_labels] = sem_plot(mat_name,mat_time_name,vid_period,perdur); %insert filename of semiology matrix as first parameter       
+[SEMperiod,ll_w_t,ll_w_t_labels] = sem_plot_no_fig(mat_name,mat_time_name,vid_period,perdur); %insert filename of semiology matrix as first parameter       
 
-[si,LL_s,ytl_LL,yt_LL,u2_s,u3_s]=LL_plot(new_anat,new_LL,ts,S,SEMperiod);
+[si,LL_s,ytl_LL,yt_LL,u2_s,u3_s]=LL_no_plot(new_anat,new_LL,ts,S,SEMperiod);
 
-[clean_ll_w_t_l, clean_LL_diff] = sem_w8s(1,ll_w_t,ll_w_t_labels,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period,S,u3_s);
+[clean_ll_w_t_l, clean_LL_diff] = sem_w8s_no_plot(1,ll_w_t,ll_w_t_labels,LL_s,ytl_LL,yt_LL,u2_s,sfx,perdur,vid_period,S,u3_s);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,26 +274,26 @@ mat_time_name = [study '_time_mat.csv']; %string for study_time_mat.csv
 
 % [symptomm,modee] = brain_w8s(pt,sz,clean_ll_w_t_l,clean_LL_diff,new_em(si,:)); 
 
-if fig 
-
-figure('color','w','position',[440,348,836,449]); subplot(1,3,1:2)
-
-lightsout; if isR; litebrain('r',1); else; litebrain('l',1); end
-    hold on; for i=1:size(new_em,1); plot3(new_em(i,1),new_em(i,2),new_em(i,3),'k.','markersize',15); end
-cmocean('balance')
-
-colorbar('Ticks',caxis,'fontsize',18,'Position',[.65,.2,.012,.6])
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-end
-
-% 6. Graph distribution
-if fig
-
-subplot(1,4,4); hold on;
-end
-
+% if fig 
+% 
+% figure('color','w','position',[440,348,836,449]); subplot(1,3,1:2)
+% 
+% lightsout; if isR; litebrain('r',1); else; litebrain('l',1); end
+%     hold on; for i=1:size(new_em,1); plot3(new_em(i,1),new_em(i,2),new_em(i,3),'k.','markersize',15); end
+% cmocean('balance')
+% 
+% colorbar('Ticks',caxis,'fontsize',18,'Position',[.65,.2,.012,.6])
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% end
+% 
+% % 6. Graph distribution
+% if fig
+% 
+% subplot(1,4,4); hold on;
+% end
+% 
 %                   symptomm=19; %make this automatically indexed later
 %                   modee=2; 
 
@@ -310,15 +310,15 @@ if sum(sx_i) > 0
       anatstructureselec_weights{u,1}=clean_LL_diff(anatstructureindex,chosen_sx,mx);
       EM{u} = new_em(anatstructureindex,:);
       [~,pval(u)]=ttest(anatstructureselec_weights{u,1});
-      if fig
-          if pval(u)<.05; mrkr='r*'; else; mrkr='ko'; end
-          plot(anatstructureselec_weights{u,1},u*ones(length(anatstructureselec_weights{u,1}),1),mrkr)
-      end
+%       if fig
+%           if pval(u)<.05; mrkr='r*'; else; mrkr='ko'; end
+%           plot(anatstructureselec_weights{u,1},u*ones(length(anatstructureselec_weights{u,1}),1),mrkr)
+%       end
     end
-    if fig
-        xlim([max(abs(xlim))*[-1 1]]); yline(0,'k-'); for u=1:length(ua); xline(u,'G:',.25); end
-        set(gca,'ytick',1:length(ua),'YTickLabel',ua,'fontsize',18)
-    end
+%     if fig
+%         xlim([max(abs(xlim))*[-1 1]]); yline(0,'k-'); for u=1:length(ua); xline(u,'G:',.25); end
+%         set(gca,'ytick',1:length(ua),'YTickLabel',ua,'fontsize',18)
+%     end
 else
     anatstructureselec_weights = [];
     EM = [];

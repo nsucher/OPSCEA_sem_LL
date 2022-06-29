@@ -107,9 +107,11 @@ symptom_list = {'Left Arm Proximal Simple',...
     'Facial Expression',...
     'Oral Automatism'};
 
+%NEED TO ORGANIZE BY BRAIN PART
 
-neuroanat_list = {'parstriangularis',...
-     'parsopercularis',...
+neuroanat_list = {'frontalpole',...% FRONTAL LOBE
+    'parstriangularis',...
+    'parsopercularis',...
     'parsorbitalis',...
     'rostralmiddlefrontal',...
     'caudalmiddlefrontal',...
@@ -117,7 +119,11 @@ neuroanat_list = {'parstriangularis',...
     'superiorfrontal',...
     'medialorbitofrontal',...
     'precentral',...
-    'postcentral',...
+    'postcentral',... % PARIETAL LOBE
+    'inferiorparietal',...   
+    'superiorparietal',...
+    'supramarginal',...
+    'temporalpole',...% TEMPORAL LOBE
     'middletemporal',...
     'superiortemporal',...
     'inferiortemporal',...
@@ -127,20 +133,15 @@ neuroanat_list = {'parstriangularis',...
     'Right-Amygdala',...
     'Left-Amygdala',...
     'entorhinal',...
-    'fusiform',...                      
-    'temporalpole',...
-    'frontalpole',...
-    'supramarginal',...
+    'bankssts',...
+    'fusiform',...% OCCIPITAL LOBE                
     'lingual',...
-    'Right-Inf-Lat-Vent',...
+    'Right-Inf-Lat-Vent',...% OTHER
     'Right-Cerebral-White-Matter',...
     'Left-Cerebral-White-Matter',...
-    'bankssts',...
     'Right-choroid-plexus',...
     'Right-Putamen',...
-    'Right-VentralDC',...
-    'inferiorparietal',...   
-    'superiorparietal'};
+    'Right-VentralDC'};
 
 sx_count = 0;
 anat_count = 0;
@@ -153,7 +154,8 @@ anatstructureselec_weights_2d = {};
 pval_2d = {};
 ua_2d = {};
 
-new_cell_list = {};
+
+neuro_i_vec = [];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -250,7 +252,7 @@ for i = 1:length(file_list)
     mat_time_name = [study '_time_mat.csv']; %string for study_time_mat.csv
 
 
-    [~,~,ll_w_t_labels] = sem_plot(mat_name,mat_time_name,vid_period,perdur); %insert filename of semiology matrix as first parameter       
+    [~,~,ll_w_t_labels] = sem_plot_no_fig(mat_name,mat_time_name,vid_period,perdur); %insert filename of semiology matrix as first parameter       
 % 
 %     u_labels = unique(ll_w_t_labels);
 
@@ -333,6 +335,7 @@ for i = 1:length(file_list)
 
             [clean_ll_w_t_labels,anatstructureselec_weights,EM,ua,pval] = avg_change(pt,sz,avg_fig,chosen_symptom,chosen_mode,chosen_perdur);
 
+
 %             EM_list() = {};
             [~,cl_col] = size(clean_ll_w_t_labels);
             [an_row,~] = size(anatstructureselec_weights);
@@ -340,14 +343,30 @@ for i = 1:length(file_list)
             [ua_row,~] = size(ua);
             [pv_row,~] = size(pval);
 
-            %cols
-            for label = 1:cl_col
-                clean_ll_w_t_label_2d{label,item} = clean_ll_w_t_labels{1,label};
-            end
+%%%%%%%%%%%
+% MAKE FOR LOOP STANDARDIZE INDEX FOR Y LABELS
+    % WHAT STRUCTURES TO PUT IN ORDER
+    % DEFINE IN CODE
+    % RUN FOR LOOP
+    % GO THROUGH AND FIND ALL ELECTRODE THAT MATCH ANATOMY OF PREFERRED
+    % ORDER
+    % GIVE INDICES OF 1 THROUGH X
+    % NEXT STRUCTURE 
+    % X+1 THROUGH Y 
 
-            for e = 1:em_col
-                EM_2d{e,item} = EM{1,e};
-            end
+    %DECIDE STRUCTURE (LOOK AT ANAT LIST) 
+
+%%%%%%%%%
+
+
+            %cols
+%             for label = 1:cl_col
+%                 clean_ll_w_t_label_2d{label,item} = clean_ll_w_t_labels{1,label};
+%             end
+% 
+%             for e = 1:em_col
+%                 EM_2d{e,item} = EM{1,e};
+%             end
 
             %rows
             for an = 1:an_row
@@ -359,59 +378,57 @@ for i = 1:length(file_list)
                 ua_2d{ua_i,item} = ua{ua_i};
             end
 
-            for pv = 1:pv_row
-                pval_2d{pv,item} = pval(pv);
-            end
+%             for pv = 1:pv_row
+%                 pval_2d{pv,item} = pval(pv);
+%             end
 
-            % collect non-empty seizures
-            if item == length(cell_list)
-                
-                for n = 1:length(cell_list)
-                    pv_cell = pval_2d{:,n};
-                    ua_cell = ua_2d{:,n};
-                    an_cell = anatstructureselec_weights_2d{:,n};
-                    em_cell = EM_2d{:,n};
+                    [u_row,~] = size(ua_2d);
 
-                    if ~isempty(pv_cell)
-                       sz_count = sz_count + 1;
-                       if n == length(cell_list)
-                           %plot subplot 
 
-                           set(0,'DefaultFigureVisible','on')
-                           final_fig = figure('Color','White');
-                           subplot(1,sz_count,sz_count) 
+            figure(1)
+            subplot(1,length(cell_list),item) 
+              if isempty(pval) == 1
+                  continue
+              else
+               for u=1:u_row %this is all using SORTED orders so be cautious!
+%                       neuro_i = strcmpi(ua_2d{u,item},neuroanat_list);
+                      if u <= length(ua)
+                          neuro_i = strcmpi(ua{u},neuroanat_list);
+                          neuro_i_num = find(neuro_i==1);
+                          neuro_i_vec{u} = neuro_i_num;
+    %                       neuro_i_vec{u,item} = neuro_i_num;
+                          
+                          neuro_var = neuroanat_list{neuro_i};
+                      else
+                          continue
+                      end
 
-                           % Display all neuroanatomy and pvals for each file 
+                      if pval(u)<.05
+                             mrkr='r*'; 
+                      elseif pval(u)>.05
+                             mrkr='ko';
+                      else isnan(pval(u))
+                            continue
+                      end
+                      
+                     plot(anatstructureselec_weights_2d{u,item},u*ones(length(anatstructureselec_weights_2d{u,item}),1),mrkr)
+                     xlim([max(abs(xlim))*[-1 1]]); 
+                     yline(0,'k-'); 
+                     for u=1:u_row;
+                         xline(u,'G:',.25); 
+                     end
+                     
+                     set(gca,'ytick',1:u_row)
+                     if item == 1
+                         set(gca,'YTickLabel',ua,'fontsize',18)
+                     end
+                     hold on;
+                     end
+                  end
 
-                       end
-                    end
-                    %remove empty columns & cell_list name 
-                  
                 end
-            end
-        end
-    end
-    
-%     [anat_row,anat_col] = size(ua);
-%     anat_count = 0;
-%     for a = 1:anat_row
-%         anat_count = anat_count + 1;
-%         all_anat_1d{anat_count} = ua{a,1};
-%     end
-
+             end
 end
-
-
-
-
-
-
-
-% mode.ItemsData = 1:3;
-
-% strcmpi(symptom_list,chosen_symptom);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
